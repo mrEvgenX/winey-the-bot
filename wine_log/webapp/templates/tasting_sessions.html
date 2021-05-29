@@ -3,20 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <title>Дегустации</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        .tasting-records-list {
+            display: flex
+            flex-direction: row;
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            justify-content: center;
+            align-items: center;
+        }
+        .tasting-record-card {
+            display: inline-flex;
+            margin: 20px 0px;
+        }
+        .tasting-record-content {
+            margin: 0px 20px;
+        }
+    </style>
 </head>
 <body>
     <h1>Дегустации</h1>
-    <ul>
-    {% for tasting_record in tasting_records %}
-        <li><div>
-            <p>{{ tasting_record.dt }}</p>
-            <p>{{ tasting_record.wine_name }}</p>
-            <p>{{ tasting_record.region }}</p>
-            <p>{{ tasting_record.grapes }}</p>
-            <p>{{ tasting_record.experience }}</p>
-            <img height="150px" src="https://storage.yandexcloud.net/evgene-petrenko-wine-bottles/{{tasting_record.photos[0].id}}" />
-        </div></li>
-    {% endfor %}
-    </ul>
+    <div class="content">
+        <ul class="tasting-records-list">
+        {% for tasting_record in tasting_records %}
+            <li><div class="tasting-record-card">
+                <div class="tasting-record-content">
+                    <h3>{{ tasting_record.wine_name }} ({{ tasting_record.region }})</h3>
+                    <p>{{ tasting_record.dt }}</p>
+                    <p>Сортовой состав: {{ tasting_record.grapes }}</p>
+                    <p>{{ tasting_record.experience }}</p>
+                </div>
+                <img height="200px" src="https://storage.yandexcloud.net/evgene-petrenko-wine-bottles/{{tasting_record.photos[0].id}}" />
+            </div></li>
+        {% endfor %}
+        </ul>
+    </div>
 </body>
 </html>

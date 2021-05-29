@@ -1,3 +1,4 @@
+import os
 import logging
 from aiohttp import web
 from sqlalchemy.orm import selectinload
@@ -46,4 +47,4 @@ app.add_routes([
 
 
 if __name__ == '__main__':
-    web.run_app(app)
+    web.run_app(app, port=os.environ.get('WINE_LOG_WEBAPP_PORT', 8080))
