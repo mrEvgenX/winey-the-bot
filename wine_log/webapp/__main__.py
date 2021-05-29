@@ -1,5 +1,4 @@
 import os
-import logging
 from aiohttp import web
 from sqlalchemy.orm import selectinload
 from sqlalchemy.future import select
@@ -7,9 +6,6 @@ import aiohttp_jinja2
 import jinja2
 from wine_log.db.models import TastingRecord
 from wine_log.db import OrmSession
-
-
-logging.basicConfig(level=logging.INFO)
 
 
 @aiohttp_jinja2.template('tasting_sessions.html')
@@ -42,7 +38,7 @@ async def handle(_):
 app = web.Application()
 aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('./wine_log/webapp/templates'))
 app.add_routes([
-    web.get('/', handle),
+    web.get('/wine-log', handle),
 ])
 
 

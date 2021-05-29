@@ -17,6 +17,7 @@ from wine_log.db.models import User, TastingRecord, WinePhoto
 
 
 logging.basicConfig(level=logging.INFO)
+log = logging.getLogger('wine_log_bot')
 API_TOKEN = os.environ['WINE_LOG_BOT_TOKEN']
 bot = Bot(token=API_TOKEN)
 
@@ -43,7 +44,7 @@ async def cmd_start(message: types.Message):
     """
     Conversation's entry point
     """
-    logging.info('cmd_start')
+    log.info('cmd_start')
     sender = message.from_user
     dt = message.date
     async with OrmSession() as session:
@@ -67,7 +68,7 @@ async def cmd_start(message: types.Message):
 async def process_photo(message: types.Message, state: FSMContext):
     dt = message.date
     current_state = await state.get_state()
-    logging.info('process_photo %s', current_state)
+    log.info('process_photo %s', current_state)
 
     largest_index = message.photo.index(max(message.photo, key=lambda photo: photo.width))
 
@@ -84,16 +85,16 @@ async def process_photo(message: types.Message, state: FSMContext):
 @dp.message_handler(chat_type=types.ChatType.PRIVATE, content_types=types.ContentTypes.TEXT, state=Form.wine_name)
 async def process_wine_name(message: types.Message, state: FSMContext):
     current_state = await state.get_state()
-    logging.info('process_wine_name %s', current_state)
+    log.info('process_wine_name %s', current_state)
     await state.update_data(wine_name=message.text)
     await Form.next()
-    await message.reply("Из какой оно страны?")
+    await message.reply("Какой у него регион происхождения?")
 
 
 @dp.message_handler(chat_type=types.ChatType.PRIVATE, content_types=types.ContentTypes.TEXT, state=Form.region)
 async def process_region(message: types.Message, state: FSMContext):
     current_state = await state.get_state()
-    logging.info('process_region %s', current_state)
+    log.info('process_region %s', current_state)
     await state.update_data(region=message.text)
     await Form.next()
     await message.reply("Из каких сортов винограда оно сделано?")
@@ -102,7 +103,7 @@ async def process_region(message: types.Message, state: FSMContext):
 @dp.message_handler(chat_type=types.ChatType.PRIVATE, content_types=types.ContentTypes.TEXT, state=Form.grapes)
 async def process_grapes(message: types.Message, state: FSMContext):
     current_state = await state.get_state()
-    logging.info('process_grapes %s', current_state)
+    log.info('process_grapes %s', current_state)
     await state.update_data(grapes=message.text)
     await Form.next()
     await message.reply("Наконец, какие ваши ощущения? Пишите свободно.")
@@ -113,18 +114,17 @@ async def process_experience(message: types.Message, state: FSMContext):
     sender = message.from_user
     dt = message.date
     current_state = await state.get_state()
-    logging.info('process_experience %s', current_state)
+    log.info('process_experience %s', current_state)
     async with state.proxy() as data:
         data['experience'] = message.text
 
         file = await bot.get_file(data['photo_file_id'])
-        logging.info(await file.get_url())
         file_buf = io.BytesIO()
         await file.download(file_buf)
 
-        logging.info('s3 put_object: submitting to pool')
+        log.info('s3 put_object: submitting to pool')
         future = pool.submit(s3bucket.put_object, Key=data['s3_obj_key'], Body=file_buf)
-        logging.info('s3 put_object: awaiting wrapped future')
+        log.info('s3 put_object: awaiting wrapped future')
         await asyncio.wrap_future(future)
 
         async with OrmSession() as session:
