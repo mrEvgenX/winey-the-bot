@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+cd /wine_log
+exec python3 -m wine_log.bot
