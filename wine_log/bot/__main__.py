@@ -17,7 +17,7 @@ from wine_log.db.models import User, TastingRecord, WinePhoto
 
 
 logging.basicConfig(level=logging.INFO)
-API_TOKEN = os.environ['WINE_LOG_TOKEN']
+API_TOKEN = os.environ['WINE_LOG_BOT_TOKEN']
 bot = Bot(token=API_TOKEN)
 
 # For example use simple MemoryStorage for Dispatcher.

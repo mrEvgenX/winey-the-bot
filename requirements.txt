@@ -2,3 +2,5 @@ aiogram
 boto3
 asyncpg
 sqlalchemy
+aiohttp
+aiohttp_jinja2

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Дегустации</title>
+</head>
+<body>
+    <h1>Дегустации</h1>
+    <ul>
+    {% for tasting_record in tasting_records %}
+        <li><div>
+            <p>{{ tasting_record.dt }}</p>
+            <p>{{ tasting_record.wine_name }}</p>
+            <p>{{ tasting_record.region }}</p>
+            <p>{{ tasting_record.grapes }}</p>
+            <p>{{ tasting_record.experience }}</p>
+            <img height="150px" src="https://storage.yandexcloud.net/evgene-petrenko-wine-bottles/{{tasting_record.photos[0].id}}" />
+        </div></li>
+    {% endfor %}
+    </ul>
+</body>
+</html>
