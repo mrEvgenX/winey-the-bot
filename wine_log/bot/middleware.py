@@ -1,11 +1,24 @@
 import logging
-from aiogram.dispatcher.middlewares import LifetimeControllerMiddleware
+from aiogram import types
+from aiogram.dispatcher.filters import ChatTypeFilter
+from aiogram.dispatcher.middlewares import BaseMiddleware, LifetimeControllerMiddleware
+from aiogram.dispatcher.handler import CancelHandler
 from wine_log.db.models import User
 from wine_log.db import OrmSession
 
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
+
+
+class PrivateChatOnlyMiddleware(BaseMiddleware):
+
+    async def on_pre_process_message(self, message: types.Message, data: dict):
+        flt = ChatTypeFilter(types.ChatType.PRIVATE)
+        if not await flt.check(message):
+            log.info(f"Handling message with id:{message.message_id} "
+                     f"in chat [{message.chat.type}:{message.chat.id}] cancelled")
+            raise CancelHandler()
 
 
 class GetUserMiddleware(LifetimeControllerMiddleware):

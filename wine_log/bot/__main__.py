@@ -15,7 +15,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import ParseMode
 from aiogram.utils import executor
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
-from .middleware import GetUserMiddleware, RegisterUserMiddleware
+from .middleware import PrivateChatOnlyMiddleware, GetUserMiddleware, RegisterUserMiddleware
 from wine_log.db import OrmSession
 from wine_log.db.models import User, TastingRecord, WinePhoto
 
@@ -44,7 +44,7 @@ class Form(StatesGroup):
     experience = State()
 
 
-@dp.message_handler(chat_type=types.ChatType.PRIVATE, commands='start')
+@dp.message_handler(commands='start')
 async def cmd_start(message: types.Message, user: User, is_new_user: bool):
     """
     Conversation's entry point
@@ -75,7 +75,7 @@ async def cmd_start(message: types.Message, user: User, is_new_user: bool):
                              'Я пока умею не так уж много чего, но могу рассказать с помощью команды /help.')
 
 
-@dp.message_handler(chat_type=types.ChatType.PRIVATE, commands='newrecord')
+@dp.message_handler(commands='newrecord')
 async def cmd_newrecord(message: types.Message):
     """
     Conversation's entry point
@@ -84,7 +84,7 @@ async def cmd_newrecord(message: types.Message):
     await message.reply("Сфотографируйте, пожалуйста, бутылку, чтобы была видна этикетка")
 
 
-@dp.message_handler(chat_type=types.ChatType.PRIVATE, content_types=types.ContentTypes.PHOTO, state=Form.photo)
+@dp.message_handler(content_types=types.ContentTypes.PHOTO, state=Form.photo)
 async def process_photo(message: types.Message, state: FSMContext):
     dt = message.date
     largest_index = message.photo.index(max(message.photo, key=lambda photo: photo.width))
@@ -98,21 +98,21 @@ async def process_photo(message: types.Message, state: FSMContext):
     await message.reply("Как называется вино?")
 
 
-@dp.message_handler(chat_type=types.ChatType.PRIVATE, content_types=types.ContentTypes.TEXT, state=Form.wine_name)
+@dp.message_handler(content_types=types.ContentTypes.TEXT, state=Form.wine_name)
 async def process_wine_name(message: types.Message, state: FSMContext):
     await state.update_data(wine_name=message.text)
     await Form.next()
     await message.reply("Какой у него регион происхождения?")
 
 
-@dp.message_handler(chat_type=types.ChatType.PRIVATE, content_types=types.ContentTypes.TEXT, state=Form.region)
+@dp.message_handler(content_types=types.ContentTypes.TEXT, state=Form.region)
 async def process_region(message: types.Message, state: FSMContext):
     await state.update_data(region=message.text)
     await Form.next()
     await message.reply("Из каких сортов винограда оно сделано?")
 
 
-@dp.message_handler(chat_type=types.ChatType.PRIVATE, content_types=types.ContentTypes.TEXT, state=Form.grapes)
+@dp.message_handler(content_types=types.ContentTypes.TEXT, state=Form.grapes)
 async def process_grapes(message: types.Message, state: FSMContext):
     await state.update_data(grapes=message.text)
     await Form.next()
@@ -120,14 +120,14 @@ async def process_grapes(message: types.Message, state: FSMContext):
                         "В сообщении должны быть только цифры, либо пришлите дефис, если информации нет")
 
 
-@dp.message_handler(chat_type=types.ChatType.PRIVATE, content_types=types.ContentTypes.TEXT, state=Form.vintage_year)
+@dp.message_handler(content_types=types.ContentTypes.TEXT, state=Form.vintage_year)
 async def process_vintage_year(message: types.Message, state: FSMContext):
     await state.update_data(vintage_year=message.text)
     await Form.next()
     await message.reply("Наконец, какие ваши ощущения? Пишите свободно.")
 
 
-@dp.message_handler(chat_type=types.ChatType.PRIVATE, content_types=types.ContentTypes.TEXT, state=Form.experience)
+@dp.message_handler(content_types=types.ContentTypes.TEXT, state=Form.experience)
 async def process_experience(message: types.Message, state: FSMContext):
     sender = message.from_user
     dt = message.date
@@ -171,6 +171,7 @@ async def process_experience(message: types.Message, state: FSMContext):
 
 if __name__ == '__main__':
     dp.middleware.setup(LoggingMiddleware(log))
+    dp.middleware.setup(PrivateChatOnlyMiddleware())
     dp.middleware.setup(GetUserMiddleware())
     dp.middleware.setup(RegisterUserMiddleware())
     executor.start_polling(dp, skip_updates=True)
