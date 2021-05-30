@@ -11,6 +11,7 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 # from aiogram.contrib.fsm_storage.files import JSONStorage
 from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import ParseMode
 from aiogram.utils import executor
@@ -62,7 +63,7 @@ async def cmd_start(message: types.Message, user: User, is_new_user: bool):
                 md.text(':wine_glass: В свободной форме рассказать о собственных ощущениях, ассоциациях... '
                         'Все, что приходит на ум'),
                 md.text(''),
-                md.text('Пришлите команду /cancel или одно слово "отмена", если передумали что-либо записывать.'),
+                md.text('Пришлите команду /cancel или одно слово "Отмена", если передумали что-либо записывать.'),
                 md.text(''),
                 md.text('Ну и заходите как-нибудь ко мне на сайт -',
                         markdown_decoration.link('winey.fun', 'https://winey.fun')),
@@ -82,6 +83,17 @@ async def cmd_newrecord(message: types.Message):
     """
     await Form.photo.set()
     await message.reply("Сфотографируйте, пожалуйста, бутылку, чтобы была видна этикетка")
+
+
+@dp.message_handler(commands='cancel', state='*')
+@dp.message_handler(Text(equals='отмена', ignore_case=True), state='*')
+async def cancel_newrecord(message: types.Message, state: FSMContext):
+    current_state = await state.get_state()
+    if current_state is None:
+        await message.answer('В данный момент вы ничего не просили записывать')
+    else:
+        await state.finish()
+        await message.reply('Ладно, не в этот раз')
 
 
 @dp.message_handler(content_types=types.ContentTypes.PHOTO, state=Form.photo)
