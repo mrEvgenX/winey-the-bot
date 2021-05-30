@@ -24,6 +24,7 @@ async def handle(_):
                     'wine_name': tasting_record.wine_name,
                     'region': tasting_record.region,
                     'grapes': tasting_record.grapes,
+                    'vintage_year': tasting_record.vintage_year,
                     'experience': tasting_record.experience,
                     'photos': [
                         {

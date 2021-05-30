@@ -147,7 +147,7 @@ async def process_vintage_year(message: types.Message, state: FSMContext):
         await message.reply(f'На дворе {current_year}, а вы написали {year}... '
                             'Что-то здесь не так, повторите, пожалуйста')
     else:
-        await state.update_data(vintage_year=message.text)
+        await state.update_data(vintage_year=year)
         await Form.next()
         await message.reply('Наконец, какие ваши ощущения? Пишите свободно.')
 

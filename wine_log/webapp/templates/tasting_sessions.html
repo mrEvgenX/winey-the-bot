@@ -33,6 +33,7 @@
                     <h3>{{ tasting_record.wine_name }} ({{ tasting_record.region }})</h3>
                     <p>{{ tasting_record.dt }}</p>
                     <p>Сортовой состав: {{ tasting_record.grapes }}</p>
+                    <p>Год урожая: {{ tasting_record.vintage_year or 'Неизвестно' }}</p>
                     <p>{{ tasting_record.experience }}</p>
                 </div>
                 <img height="200px" src="https://storage.yandexcloud.net/evgene-petrenko-wine-bottles/{{tasting_record.photos[0].id}}" />
