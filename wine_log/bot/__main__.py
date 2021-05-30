@@ -5,6 +5,8 @@ import io
 import boto3
 from concurrent.futures import ThreadPoolExecutor
 import aiogram.utils.markdown as md
+from aiogram.utils.emoji import emojize
+from aiogram.utils.text_decorations import markdown_decoration
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 # from aiogram.contrib.fsm_storage.files import JSONStorage
@@ -13,6 +15,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import ParseMode
 from aiogram.utils import executor
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
+from .middleware import GetUserMiddleware, RegisterUserMiddleware
 from wine_log.db import OrmSession
 from wine_log.db.models import User, TastingRecord, WinePhoto
 
@@ -42,26 +45,41 @@ class Form(StatesGroup):
 
 
 @dp.message_handler(chat_type=types.ChatType.PRIVATE, commands='start')
-async def cmd_start(message: types.Message):
+async def cmd_start(message: types.Message, user: User, is_new_user: bool):
     """
     Conversation's entry point
     """
-    log.info('cmd_start')
-    sender = message.from_user
-    dt = message.date
-    async with OrmSession() as session:
-        user = await session.get(User, sender['id'])
-        if not user:
-            user = User(
-                id=sender.id,
-                username=sender.username,
-                first_name=sender.first_name,
-                last_name=sender.last_name,
-                lang=sender.language_code,
-                joined_dt=dt
-            )
-            session.add(user)
-            await session.commit()
+    if is_new_user:
+        await message.answer(
+            emojize(md.text(
+                md.text('Привет, меня зовут Уайни.'),
+                md.text('Позовите меня с помощью команды /newrecord, '
+                        'когда в следующий раз будете хорошо проводить время за бокалом вина.'),
+                md.text('Я помогу вам запомнить, что это было за вино и какие ощущения у вас были по этому поводу, '
+                        'а от вас протребуется только:'),
+                md.text(':camera_with_flash: Сфотографировать этикетку'),
+                md.text(':grapes: Сообщить название вина, регион его происхождения, сортовой состав и год урожая'),
+                md.text(':wine_glass: В свободной форме рассказать о собственных ощущениях, ассоциациях... '
+                        'Все, что приходит на ум'),
+                md.text(''),
+                md.text('Пришлите команду /cancel или одно слово "отмена", если передумали что-либо записывать.'),
+                md.text(''),
+                md.text('Ну и заходите как-нибудь ко мне на сайт -',
+                        markdown_decoration.link('winey.fun', 'https://winey.fun')),
+                sep='\n',
+            )),
+            parse_mode=ParseMode.MARKDOWN,
+        )
+    else:
+        await message.answer(f'Привет, {user.first_name}, приятно получать от вас новые сообщения. '
+                             'Я пока умею не так уж много чего, но могу рассказать с помощью команды /help.')
+
+
+@dp.message_handler(chat_type=types.ChatType.PRIVATE, commands='newrecord')
+async def cmd_newrecord(message: types.Message):
+    """
+    Conversation's entry point
+    """
     await Form.photo.set()
     await message.reply("Сфотографируйте, пожалуйста, бутылку, чтобы была видна этикетка")
 
@@ -143,6 +161,7 @@ async def process_experience(message: types.Message, state: FSMContext):
         await message.answer(
             md.text(
                 md.text('Готово, информация в базе'),
+                md.text('Для просмотра переходите на', markdown_decoration.link('winey.fun', 'https://winey.fun')),
                 sep='\n',
             ),
             parse_mode=ParseMode.MARKDOWN,
@@ -152,4 +171,6 @@ async def process_experience(message: types.Message, state: FSMContext):
 
 if __name__ == '__main__':
     dp.middleware.setup(LoggingMiddleware(log))
+    dp.middleware.setup(GetUserMiddleware())
+    dp.middleware.setup(RegisterUserMiddleware())
     executor.start_polling(dp, skip_updates=True)
