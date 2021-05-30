@@ -10,7 +10,7 @@ from aiogram.utils.emoji import emojize
 from aiogram.utils.text_decorations import markdown_decoration
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-# from aiogram.contrib.fsm_storage.files import JSONStorage
+from aiogram.contrib.fsm_storage.files import PickleStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
@@ -24,15 +24,18 @@ from wine_log.db.models import User, TastingRecord, WinePhoto
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger('wine_log_bot')
-API_TOKEN = os.environ['WINE_LOG_BOT_TOKEN']
+API_TOKEN = os.environ['WINEY_BOT_TOKEN']
 bot = Bot(token=API_TOKEN)
 
-# For example use simple MemoryStorage for Dispatcher.
-storage = MemoryStorage()
+storage_file_path = os.environ.get('WINEY_STATE_STORAGE_FILE_PATH')
+if storage_file_path:
+    storage = PickleStorage(storage_file_path)
+else:
+    storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
-s3 = boto3.resource('s3', endpoint_url=os.environ['S3_ENDPOINT_URL'])
-s3bucket = s3.Bucket(os.environ['S3_WINE_PHOTOS_BUCKET'])
+s3 = boto3.resource('s3', endpoint_url=os.environ['WINEY_S3_ENDPOINT_URL'])
+s3bucket = s3.Bucket(os.environ['WINEY_S3_WINE_PHOTOS_BUCKET'])
 pool = ThreadPoolExecutor()
 
 

@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from .models import Base
 
 
-DATABASE_URI = os.environ['WINE_LOG_DATABASE_URI']
+DATABASE_URI = os.environ['WINEY_DATABASE_URI']
 
 
 async def main():
