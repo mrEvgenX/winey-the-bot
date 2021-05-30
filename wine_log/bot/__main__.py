@@ -1,5 +1,6 @@
 import logging
 import os
+from datetime import datetime
 import asyncio
 import io
 import boto3
@@ -82,7 +83,7 @@ async def cmd_newrecord(message: types.Message):
     Conversation's entry point
     """
     await Form.photo.set()
-    await message.reply("Сфотографируйте, пожалуйста, бутылку, чтобы была видна этикетка")
+    await message.reply('Сфотографируйте, пожалуйста, бутылку, чтобы была видна этикетка')
 
 
 @dp.message_handler(commands='cancel', state='*')
@@ -107,36 +108,53 @@ async def process_photo(message: types.Message, state: FSMContext):
                    f'{message.photo[largest_index].file_unique_id}'
     )
     await Form.next()
-    await message.reply("Как называется вино?")
+    await message.reply('Как называется вино?')
 
 
 @dp.message_handler(content_types=types.ContentTypes.TEXT, state=Form.wine_name)
 async def process_wine_name(message: types.Message, state: FSMContext):
     await state.update_data(wine_name=message.text)
     await Form.next()
-    await message.reply("Какой у него регион происхождения?")
+    await message.reply('Какой у него регион происхождения?')
 
 
 @dp.message_handler(content_types=types.ContentTypes.TEXT, state=Form.region)
 async def process_region(message: types.Message, state: FSMContext):
     await state.update_data(region=message.text)
     await Form.next()
-    await message.reply("Из каких сортов винограда оно сделано?")
+    await message.reply('Из каких сортов винограда оно сделано?')
 
 
 @dp.message_handler(content_types=types.ContentTypes.TEXT, state=Form.grapes)
 async def process_grapes(message: types.Message, state: FSMContext):
     await state.update_data(grapes=message.text)
     await Form.next()
-    await message.reply("Из винограда какого года урожая оно сделано?"
-                        "В сообщении должны быть только цифры, либо пришлите дефис, если информации нет")
+    await message.reply('Из винограда какого года урожая оно сделано? '
+                        'В сообщении должны быть только цифры, либо пришлите дефис, если информации нет')
 
 
-@dp.message_handler(content_types=types.ContentTypes.TEXT, state=Form.vintage_year)
-async def process_vintage_year(message: types.Message, state: FSMContext):
-    await state.update_data(vintage_year=message.text)
+@dp.message_handler(Text(equals='-', ignore_case=True), state=Form.vintage_year)
+async def process_empty_vintage_year(message: types.Message):
     await Form.next()
-    await message.reply("Наконец, какие ваши ощущения? Пишите свободно.")
+    await message.reply('Наконец, какие ваши ощущения? Пишите свободно.')
+
+
+@dp.message_handler(lambda message: message.text.isdigit(), state=Form.vintage_year)
+async def process_vintage_year(message: types.Message, state: FSMContext):
+    year = int(message.text)
+    current_year = datetime.now().year
+    if year > current_year:
+        await message.reply(f'На дворе {current_year}, а вы написали {year}... '
+                            'Что-то здесь не так, повторите, пожалуйста')
+    else:
+        await state.update_data(vintage_year=message.text)
+        await Form.next()
+        await message.reply('Наконец, какие ваши ощущения? Пишите свободно.')
+
+
+@dp.message_handler(lambda message: not message.text.isdigit() and message.text != '-', state=Form.vintage_year)
+async def process_vintage_year_invalid(message: types.Message):
+    await message.reply('Извините, в сообщении должны быть только цифры, либо пришлите дефис, если информации нет')
 
 
 @dp.message_handler(content_types=types.ContentTypes.TEXT, state=Form.experience)
@@ -163,7 +181,7 @@ async def process_experience(message: types.Message, state: FSMContext):
                 wine_name=data['wine_name'],
                 region=data['region'],
                 grapes=data['grapes'],
-                vintage_year=data['vintage_year'],
+                vintage_year=data.get('vintage_year'),
                 experience=data['experience'],
             )
             tasting_record.photos.append(photo)
