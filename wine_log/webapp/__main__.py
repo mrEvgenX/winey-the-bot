@@ -8,6 +8,11 @@ from wine_log.db.models import TastingRecord
 from wine_log.db import OrmSession
 
 
+@aiohttp_jinja2.template('index.html')
+async def index(_):
+    return {}
+
+
 @aiohttp_jinja2.template('tasting_sessions.html')
 async def handle(_):
     async with OrmSession() as session:
@@ -40,6 +45,7 @@ app = web.Application()
 aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('./wine_log/webapp/templates'))
 app.add_routes([
     web.get('/wine-log', handle),
+    web.get('/', index),
 ])
 
 

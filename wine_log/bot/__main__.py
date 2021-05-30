@@ -77,6 +77,29 @@ async def cmd_start(message: types.Message, user: User, is_new_user: bool):
                              'Я пока умею не так уж много чего, но могу рассказать с помощью команды /help.')
 
 
+@dp.message_handler(commands='help')
+async def cmd_help(message: types.Message):
+    await message.answer(
+        emojize(md.text(
+            md.text('Мое имя Уайни. И вот, что я умею:'),
+            md.text(''),
+            md.text('/newrecord - с помощью этой команды я помогу вам запомнить, '
+                    'что это было за вино и какие ощущения у вас были по этому поводу'),
+            md.text('В ответ я попрошу:'),
+            md.text(':camera_with_flash: Сфотографировать этикетку'),
+            md.text(':grapes: Сообщить название вина, регион его происхождения, сортовой состав и год урожая'),
+            md.text(':wine_glass: В свободной форме рассказать о собственных ощущениях, ассоциациях... '
+                    'Все, что приходит на ум'),
+            md.text(''),
+            md.text('/cancel или одно слово "Отмена" - так можно мне сообщить, если передумали что-либо записывать.'),
+            md.text(''),
+            md.text('Мой сайт -', markdown_decoration.link('winey.fun', 'https://winey.fun')),
+            sep='\n',
+        )),
+        parse_mode=ParseMode.MARKDOWN,
+    )
+
+
 @dp.message_handler(commands='newrecord')
 async def cmd_newrecord(message: types.Message):
     """
