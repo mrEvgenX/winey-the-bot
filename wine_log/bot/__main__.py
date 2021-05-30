@@ -26,8 +26,8 @@ bot = Bot(token=API_TOKEN)
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
-s3 = boto3.resource('s3', endpoint_url='https://storage.yandexcloud.net')
-s3bucket = s3.Bucket('evgene-petrenko-wine-bottles')
+s3 = boto3.resource('s3', endpoint_url=os.environ['S3_ENDPOINT_URL'])
+s3bucket = s3.Bucket(os.environ['S3_WINE_PHOTOS_BUCKET'])
 pool = ThreadPoolExecutor()
 
 
@@ -37,6 +37,7 @@ class Form(StatesGroup):
     wine_name = State()
     region = State()
     grapes = State()
+    vintage_year = State()
     experience = State()
 
 
@@ -97,6 +98,14 @@ async def process_region(message: types.Message, state: FSMContext):
 async def process_grapes(message: types.Message, state: FSMContext):
     await state.update_data(grapes=message.text)
     await Form.next()
+    await message.reply("Из винограда какого года урожая оно сделано?"
+                        "В сообщении должны быть только цифры, либо пришлите дефис, если информации нет")
+
+
+@dp.message_handler(chat_type=types.ChatType.PRIVATE, content_types=types.ContentTypes.TEXT, state=Form.vintage_year)
+async def process_vintage_year(message: types.Message, state: FSMContext):
+    await state.update_data(vintage_year=message.text)
+    await Form.next()
     await message.reply("Наконец, какие ваши ощущения? Пишите свободно.")
 
 
@@ -124,6 +133,7 @@ async def process_experience(message: types.Message, state: FSMContext):
                 wine_name=data['wine_name'],
                 region=data['region'],
                 grapes=data['grapes'],
+                vintage_year=data['vintage_year'],
                 experience=data['experience'],
             )
             tasting_record.photos.append(photo)

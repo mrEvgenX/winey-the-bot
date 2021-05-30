@@ -24,6 +24,7 @@ class TastingRecord(Base):
     wine_name = Column(String(128), nullable=False)
     region = Column(String(128), nullable=False)
     grapes = Column(String(256), nullable=False)
+    vintage_year = Column(Integer)
     experience = Column(Text, nullable=False)
     photos = relationship('WinePhoto')
 
