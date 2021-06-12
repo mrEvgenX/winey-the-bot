@@ -6,3 +6,4 @@ aiohttp
 aiohttp_jinja2
 emoji
 alembic
+psycopg2  # for migrations
