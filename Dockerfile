@@ -5,13 +5,13 @@ RUN apt-get -y update && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     pip3 install --upgrade pip
 
-RUN mkdir /wine_log
-WORKDIR /wine_log
+RUN mkdir /winey
+WORKDIR /winey
 
-COPY ./requirements.txt /wine_log/
+COPY ./requirements.txt /winey/
 
-RUN pip3 install -r /wine_log/requirements.txt
+RUN pip3 install -r /winey/requirements.txt
 
-COPY ./wine_log /wine_log/wine_log
+COPY ./winey /winey/winey
 COPY runit/bot /etc/service/bot
 COPY runit/webapp /etc/service/webapp

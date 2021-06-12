@@ -4,8 +4,8 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.future import select
 import aiohttp_jinja2
 import jinja2
-from wine_log.db.models import TastingRecord
-from wine_log.db import OrmSession
+from winey.db.models import TastingRecord
+from winey.db import OrmSession
 
 
 @aiohttp_jinja2.template('index.html')
@@ -42,7 +42,7 @@ async def handle(_):
 
 
 app = web.Application()
-aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('./wine_log/webapp/templates'))
+aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('./winey/webapp/templates'))
 app.add_routes([
     web.get('/wine-log', handle),
     web.get('/', index),

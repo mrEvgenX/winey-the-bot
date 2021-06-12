@@ -3,8 +3,8 @@ from aiogram import types
 from aiogram.dispatcher.filters import ChatTypeFilter
 from aiogram.dispatcher.middlewares import BaseMiddleware, LifetimeControllerMiddleware
 from aiogram.dispatcher.handler import CancelHandler
-from wine_log.db.models import User
-from wine_log.db import OrmSession
+from winey.db.models import User
+from winey.db import OrmSession
 
 
 logging.basicConfig(level=logging.INFO)

@@ -18,12 +18,12 @@ from aiogram.types import ParseMode
 from aiogram.utils import executor
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from .middleware import PrivateChatOnlyMiddleware, GetUserMiddleware, RegisterUserMiddleware
-from wine_log.db import OrmSession
-from wine_log.db.models import User, TastingRecord, WinePhoto
+from winey.db import OrmSession
+from winey.db.models import User, TastingRecord, WinePhoto
 
 
 logging.basicConfig(level=logging.INFO)
-log = logging.getLogger('wine_log_bot')
+log = logging.getLogger('winey.bot')
 API_TOKEN = os.environ['WINEY_BOT_TOKEN']
 bot = Bot(token=API_TOKEN)
 

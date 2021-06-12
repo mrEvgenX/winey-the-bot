@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-cd /wine_log
-exec python3 -m wine_log.webapp
+cd /winey
+exec python3 -m winey.webapp
 
