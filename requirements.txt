@@ -5,3 +5,4 @@ sqlalchemy
 aiohttp
 aiohttp_jinja2
 emoji
+alembic
