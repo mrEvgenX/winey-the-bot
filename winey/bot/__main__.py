@@ -17,7 +17,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import ParseMode
 from aiogram.utils import executor
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
-from .middleware import PrivateChatOnlyMiddleware, GetUserMiddleware, RegisterUserMiddleware
+from .middleware import PrivateChatOnlyMiddleware, GetOrCreateUserMiddleware
 from winey.db import OrmSession
 from winey.db.models import User, TastingRecord, WinePhoto
 
@@ -228,6 +228,5 @@ async def process_experience(message: types.Message, state: FSMContext):
 if __name__ == '__main__':
     dp.middleware.setup(LoggingMiddleware(log))
     dp.middleware.setup(PrivateChatOnlyMiddleware())
-    dp.middleware.setup(GetUserMiddleware())
-    dp.middleware.setup(RegisterUserMiddleware())
+    dp.middleware.setup(GetOrCreateUserMiddleware())
     executor.start_polling(dp, skip_updates=True)

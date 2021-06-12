@@ -21,35 +21,28 @@ class PrivateChatOnlyMiddleware(BaseMiddleware):
             raise CancelHandler()
 
 
-class GetUserMiddleware(LifetimeControllerMiddleware):
+class GetOrCreateUserMiddleware(LifetimeControllerMiddleware):
     skip_patterns = ['error', 'update', 'channel_post', 'poll']
 
     async def pre_process(self, obj, data, *args):
-        sender = obj.from_user
+        from_user = types.User.get_current()
         async with OrmSession() as session:
             # TODO take care about caching
-            user = await session.get(User, sender['id'])
+            user = await session.get(User, from_user.id)
             data['user'] = user
-            data['is_new_user'] = user is None
-
-
-class RegisterUserMiddleware(LifetimeControllerMiddleware):
-    skip_patterns = ['error', 'update', 'channel_post', 'poll']
-
-    async def pre_process(self, obj, data, *args):
-        sender = obj.from_user
-        dt = obj.date
-        if not data['user']:
-            log.info(f'Creating user @{sender.username} with id {sender.id}')
-            async with OrmSession() as session:
+            data['is_new_user'] = False
+            if not data['user']:
+                dt = obj.date
+                log.info(f'Creating user @{from_user.username} with id {from_user.id}')
                 user = User(
-                    id=sender.id,
-                    username=sender.username,
-                    first_name=sender.first_name,
-                    last_name=sender.last_name,
-                    lang=sender.language_code,
+                    id=from_user.id,
+                    username=from_user.username,
+                    first_name=from_user.first_name,
+                    last_name=from_user.last_name,
+                    lang=from_user.language_code,
                     joined_dt=dt
                 )
                 session.add(user)
                 await session.commit()
                 data['user'] = user
+                data['is_new_user'] = True
